@@ -1,5 +1,5 @@
 # .gitignore
-data_raw/*.csv
+/data_raw/*.csv
 data/processed/
 .env
 __pycache__/
