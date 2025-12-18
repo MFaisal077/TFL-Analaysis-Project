@@ -1,0 +1,6 @@
+2025-12-18 09:24:11,122 - ERROR - Critical: Database connection failed. invalid literal for int() with base 10: 'None'
+2025-12-18 09:37:47,832 - ERROR - Critical: Database connection failed. invalid literal for int() with base 10: 'None'
+2025-12-18 09:41:47,656 - ERROR - Critical: Database connection failed. No module named 'psycopg2'
+2025-12-18 09:45:00,709 - WARNING - No files found matching pattern: data/raw/*.csv
+2025-12-18 10:02:09,714 - ERROR - Critical: Database connection failed. No module named 'psycopg2'
+2025-12-18 10:03:46,718 - WARNING - No files found matching pattern: data/raw/*.csv
