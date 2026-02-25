@@ -3,15 +3,10 @@ import pandas as pd
 import psycopg2
 import warnings
 
-# ============================
-# 1. SETUP & CONFIGURATION
-# ============================
+
 st.set_page_config(layout="wide", page_title="TFL Dashboard")
 warnings.filterwarnings('ignore')
 
-# ============================
-# 2. LOAD DATA ONCE AT THE TOP (Important!)
-# ============================
 @st.cache_data
 def connect_lchbyline():
     conn = psycopg2.connect(
@@ -59,14 +54,38 @@ def connect_ejt():
     conn.close()
     return df
 
-# Load data once
+@st.cache_data
+def connect_css_esc_avl():
+     conn = psycopg2.connect(
+        host="localhost", database="TFL_Analysis",
+        user="postgres", password="Faisal@123"
+    )
+     query="""
+     SELECT 
+    esc_avl.line,
+    CASE 
+        WHEN esc_avl.esc_avail > 95 THEN 'High'
+        WHEN esc_avl.esc_avail BETWEEN 90 AND 95 THEN 'Medium'
+        ELSE 'Low'
+    END as esc_tier,
+    ROUND(AVG(css.customer_satisfaction), 1) as avg_satisfaction_percent,
+    COUNT(*) as num_years
+FROM css 
+INNER JOIN esc_avl ON css.line = esc_avl.line AND css."year" = esc_avl."year"
+GROUP BY esc_avl.line, esc_tier
+ORDER BY esc_avl.line, esc_tier DESC;"""
+     df=pd.read_sql(query,conn)
+     conn.close()
+     return df
+    
+
+
 data_line = connect_lchbyline()
 data_cat = connect_lchbycategory()
 data_ejt = connect_ejt()
+data_css=connect_css_esc_avl()
 
-# ============================
-# 3. SIDEBAR
-# ============================
+
 with st.sidebar:
     st.header("Project Controls")
     st.write("This dashboard visualizes the long-term performance trends of the London Underground.")
@@ -84,9 +103,7 @@ with st.sidebar:
     st.info("Data Source: TFL Open Data (2004-2017)")
     st.caption("Created by Mohammad Faisal")
 
-# ============================
-# 4. MAIN PAGE
-# ============================
+
 st.title("London Underground Performance")
 
 st.markdown("""
@@ -96,7 +113,7 @@ This tool bridges the gap between raw **Transport for London (TfL)** data and ac
 
 st.divider()
 
-col1, col2, col3 = st.columns(3)
+col1, col2, col3,col4 = st.columns(4)
 
 with col1:
     st.subheader("Year-Over-Year Change in LCH")
@@ -112,7 +129,7 @@ with col2:
     st.subheader("Performance by Cause (Millions)")
     try:
         df = data_cat.copy()
-        if selected_lines:   # Note: category chart doesn't have 'line', so we skip filtering here for now
+        if selected_lines:  
             pass
         st.line_chart(df, x="year", y="lost_hours_millions", color="category")
     except Exception as e:
@@ -127,3 +144,12 @@ with col3:
         st.line_chart(df, x="year", y="ejt", color="line")
     except Exception as e:
         st.error(f"Database Error: {e}")
+        
+with col4:
+    st.header("Customer Satisfaction")
+    try:
+        df=data_css.copy()
+        st.bar_chart(df, x='line', y='avg_satisfaction_percent', color='esc_tier')
+    except Exception as e:
+        st.error(f"Database Error: {e}")
+    

@@ -11,6 +11,7 @@ conn = psycopg2.connect(
 )
 cursor=conn.cursor()
 
+'''
 ##LCh by line
 df=pd.read_csv(r"data_raw\Lost Customer Hours By Line.csv",skiprows=1, nrows = 10)
 df.rename(columns={df.columns[0]: 'line'}, inplace=True)
@@ -64,7 +65,7 @@ query4=("Insert into css(line,year,customer_satisfaction) values (%s,%s,%s)")
 for index,row in melted_df4.iterrows():
     value4=(row['line'],row['year'],row['Customer Satisfaction'])
     cursor.execute(query4,value4)
-'''
+
 
 
 conn.commit()
