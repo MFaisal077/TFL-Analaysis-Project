@@ -70,4 +70,3 @@ for index,row in melted_df4.iterrows():
 conn.commit()
 conn.close()
 
-
