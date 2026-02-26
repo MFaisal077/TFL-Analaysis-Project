@@ -113,7 +113,7 @@ This tool bridges the gap between raw **Transport for London (TfL)** data and ac
 
 st.divider()
 
-col1, col2, col3,col4 = st.columns(4)
+col1, col2, col3 = st.columns(3)
 
 with col1:
     st.subheader("Year-Over-Year Change in LCH")
@@ -145,11 +145,13 @@ with col3:
     except Exception as e:
         st.error(f"Database Error: {e}")
         
-with col4:
-    st.header("Customer Satisfaction")
-    try:
-        df=data_css.copy()
-        st.bar_chart(df, x='line', y='avg_satisfaction_percent', color='esc_tier')
-    except Exception as e:
-        st.error(f"Database Error: {e}")
+st.divider()
+st.subheader("Customer Satisfaction vs Escalator Availability")
+try:
+    df = data_css.copy()
+    if selected_lines:
+        df = df[df['line'].isin(selected_lines)]
+    st.bar_chart(df, x="line", y="avg_satisfaction_percent", color="esc_tier", use_container_width=True)
+except Exception as e:
+    st.error(f"Database Error: {e}")
     
