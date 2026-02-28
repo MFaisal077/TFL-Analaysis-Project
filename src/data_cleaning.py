@@ -57,7 +57,7 @@ for index,row in melted_df3.iterrows():
     value3=(row['Escalator Availability(%)'],row['line'],row['year'])
     cursor.execute(query3,value3)
 
-'''
+
 df4=pd.read_csv(r"data_raw\Customer Satisfation.csv",skiprows=[0,2],nrows=10)
 df4.rename(columns={df4.columns[0]:'line'},inplace=True)
 melted_df4=pd.melt(df4,id_vars=["line"],var_name="year",value_name="Customer Satisfaction")
@@ -65,8 +65,16 @@ query4=("Insert into css(line,year,customer_satisfaction) values (%s,%s,%s)")
 for index,row in melted_df4.iterrows():
     value4=(row['line'],row['year'],row['Customer Satisfaction'])
     cursor.execute(query4,value4)
+'''
 
-
+df5=pd.read_csv(r"data_raw\Scheduled Operated.csv",skiprows=[0,2],nrows=10)
+df5.rename(columns={df5.columns[0]:'line'},inplace=True)
+melted_df5=pd.melt(df5,id_vars=["line"],var_name="year",value_name="Schedule Operated")
+melted_df5["Schedule Operated"]=melted_df5["Schedule Operated"].str.replace("%","")
+query5=("Insert into schedule_operated(line,year,schedule_operated) values(%s,%s,%s)")
+for index,row in melted_df5.iterrows():
+    value5=(row['line'],row['year'],row['Schedule Operated'])
+    cursor.execute(query5,value5)
 
 conn.commit()
 conn.close()
