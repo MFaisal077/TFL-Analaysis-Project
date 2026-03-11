@@ -2,162 +2,22 @@ import streamlit as st
 import pandas as pd
 import psycopg2
 import plotly.express as px
+import data_loader
 
 st.set_page_config(layout="wide", page_title="TFL Dashboard")
-@st.cache_data
-def get_most_stable_line():
-    conn = get_connection()
-    query = """
-        SELECT line, stddev_samp
-        FROM v_line_volatility
-        WHERE stddev_samp IS NOT NULL
-        ORDER BY stddev_samp ASC
-        LIMIT 1;
-    """
-    df = pd.read_sql(query, conn)
-    conn.close()
-    return df.iloc[0]["line"], round(df.iloc[0]["stddev_samp"], 2)
 
-
-@st.cache_data
-def get_top_insight_lines():
-    conn = get_connection()
-    query = """
-        SELECT
-            line,
-            avg_lch,
-            avg_customer_satisfaction
-        FROM v_line_summary
-        WHERE avg_lch IS NOT NULL
-        ORDER BY avg_lch DESC
-        LIMIT 1;
-    """
-    df = pd.read_sql(query, conn)
-    conn.close()
-    return (
-        df.iloc[0]["line"],
-        round(df.iloc[0]["avg_lch"], 2),
-        df.iloc[0]["avg_customer_satisfaction"]
-    )
-
-# ---------------- CONNECTION ----------------
-def get_connection():
-    return psycopg2.connect(
-        host="localhost",
-        database="TFL_Analysis",
-        user="postgres",
-        password="Faisal@123"
-    )
-
-
-# ---------------- DATA LOADERS ----------------
-@st.cache_data
-def get_network_benchmark():
-    conn = get_connection()
-    query = """
-        SELECT
-            line,
-            "year",
-            lost_customer_hours,
-            schedule_operated,
-            customer_satisfaction,
-            esc_avail,
-            ejt,
-            network_avg_lch,
-            network_avg_schedule,
-            network_avg_css,
-            network_avg_esc,
-            network_avg_ejt
-        FROM v_network_benchmark
-        ORDER BY "year", line;
-    """
-    df = pd.read_sql(query, conn)
-    conn.close()
-
-    df["year_label"] = df["year"]
-    df["year"] = df["year"].str[:4].astype(int)
-    return df
-
-
-@st.cache_data
-def get_most_volatile_line():
-    conn = get_connection()
-    query = """
-        SELECT line, stddev_samp
-        FROM v_line_volatility
-        ORDER BY stddev_samp DESC
-        LIMIT 1;
-    """
-    df = pd.read_sql(query, conn)
-    conn.close()
-    return df.iloc[0]["line"], round(df.iloc[0]["stddev_samp"], 2)
-
-
-@st.cache_data
-def get_best_satisfaction_line():
-    conn = get_connection()
-    query = """
-        SELECT line, avg_customer_satisfaction
-        FROM v_line_summary
-        WHERE avg_customer_satisfaction IS NOT NULL
-        ORDER BY avg_customer_satisfaction DESC
-        LIMIT 1;
-    """
-    df = pd.read_sql(query, conn)
-    conn.close()
-    return df.iloc[0]["line"], round(df.iloc[0]["avg_customer_satisfaction"], 2)
-
-
-@st.cache_data
-def get_worst_disruption_line():
-    conn = get_connection()
-    query = """
-        SELECT line, avg_lch
-        FROM v_line_summary
-        WHERE avg_lch IS NOT NULL
-        ORDER BY avg_lch DESC
-        LIMIT 1;
-    """
-    df = pd.read_sql(query, conn)
-    conn.close()
-    return df.iloc[0]["line"], round(df.iloc[0]["avg_lch"], 2)
-
-
-@st.cache_data
-def get_volatility_ranking():
-    conn = get_connection()
-    query = """
-        SELECT line, stddev_samp
-        FROM v_line_volatility
-        ORDER BY stddev_samp DESC;
-    """
-    df = pd.read_sql(query, conn)
-    conn.close()
-    return df
-
-
-@st.cache_data
-def get_line_metrics():
-    conn = get_connection()
-    query = """
-        SELECT
-            line,
-            "year",
-            lost_customer_hours,
-            ejt,
-            customer_satisfaction,
-            schedule_operated,
-            esc_avail
-        FROM v_perfomance_base
-        ORDER BY "year", line;
-    """
-    df = pd.read_sql(query, conn)
-    conn.close()
-
-    df["year_label"] = df["year"]
-    df["year"] = df["year"].str[:4].astype(int)
-    return df
-
+from data_loader import (
+    get_network_benchmark,
+    get_most_volatile_line,
+    get_best_satisfaction_line,
+    get_worst_disruption_line,
+    get_volatility_ranking,
+    get_line_metrics,
+    get_yearly_rankings,
+    get_most_stable_line,
+    get_top_insight_lines,
+    get_yearly_rankings
+)
 
 benchmark_df = get_network_benchmark()
 most_volatile_line, volatility_score = get_most_volatile_line()
@@ -167,6 +27,7 @@ volatility_df = get_volatility_ranking()
 metrics_df = get_line_metrics()
 most_stable_line, stable_score = get_most_stable_line()
 insight_line, insight_lch, insight_css = get_top_insight_lines()
+yearly_rankings=get_yearly_rankings()
 
 volatility_df = volatility_df.rename(columns={"stddev_samp": "Volatility Score"})
 
@@ -196,8 +57,6 @@ metric_descriptions = {
 
 all_lines = sorted(metrics_df["line"].dropna().unique().tolist())
 
-
-# ---------------- SIDEBAR ----------------
 with st.sidebar:
     st.title("Dashboard Controls")
 
@@ -218,20 +77,41 @@ with st.sidebar:
         options=all_lines,
         index=0
     )
+    
+    available_years = sorted(yearly_rankings["year"].dropna().unique().tolist())
+
+    selected_year = st.selectbox(
+    "Select year for rankings",
+    options=available_years,
+    index=0
+    )
+
+    ranking_metric_map = {
+    "Best Lost Customer Hours Rank": "rank_lch_best",
+    "Best Schedule Operated Rank": "rank_schedule_best",
+    "Best Customer Satisfaction Rank": "rank_css_best"
+    }
+
+    selected_ranking_label = st.selectbox(
+    "Select ranking metric",
+    options=list(ranking_metric_map.keys()),
+    index=0
+    )
+
+selected_ranking_metric = ranking_metric_map[selected_ranking_label]
 
 selected_metric = metric_map[selected_metric_label]
 
 
-# ---------------- PAGE HEADER ----------------
+
 st.title("London Underground Performance Dashboard")
 st.write(
     "A historical analysis of reliability, disruption, and customer experience across Underground lines."
 )
 
-tab1, tab2, tab3 = st.tabs(["Overview", "Line Explorer", "Network Analysis"])
+tab1, tab2, tab3,tab4 = st.tabs(["Overview", "Line Explorer", "Network Analysis","Yearly Rankings"])
 
 
-# ---------------- TAB 1: OVERVIEW ----------------
 with tab1:
     col1, col2, col3 = st.columns(3)
 
@@ -276,8 +156,6 @@ with tab1:
     """
     )
 
-
-# ---------------- TAB 2: LINE EXPLORER ----------------
 with tab2:
     st.subheader("Line Explorer")
 
@@ -306,8 +184,6 @@ with tab2:
     st.plotly_chart(fig_metric, use_container_width=True)
     st.caption(metric_descriptions[selected_metric_label])
 
-
-# ---------------- TAB 3: NETWORK ANALYSIS ----------------
 with tab3:
     st.subheader("Line vs Network Average")
 
@@ -349,3 +225,33 @@ with tab3:
     st.caption(
         f"This chart compares {selected_line_for_comparison} against the network average for {selected_metric_label.lower()}."
     )
+with tab4:
+    st.subheader("Yearly Performance Rankings")
+
+    filtered_rankings = yearly_rankings[yearly_rankings["year"] == selected_year].copy()
+    filtered_rankings = filtered_rankings.dropna(subset=[selected_ranking_metric])
+    filtered_rankings = filtered_rankings.sort_values(selected_ranking_metric, ascending=True)
+
+    fig_rank = px.bar(
+        filtered_rankings,
+        x="line",
+        y=selected_ranking_metric,
+        color="line",
+        title=f"{selected_ranking_label} for {selected_year}"
+    )
+
+    fig_rank.update_layout(
+        xaxis_title="Line",
+        yaxis_title=selected_ranking_label,
+        showlegend=False
+    )
+
+    st.plotly_chart(fig_rank, use_container_width=True)
+
+    top_line = filtered_rankings.iloc[0]["line"]
+    top_rank = filtered_rankings.iloc[0][selected_ranking_metric]
+
+    st.caption(
+        f"For {selected_year}, **{top_line}** achieved the strongest result in **{selected_ranking_label.lower()}** with rank **{int(top_rank)}**."
+    )
+    
