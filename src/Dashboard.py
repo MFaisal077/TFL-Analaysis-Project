@@ -19,7 +19,8 @@ from data_loader import (
     get_yearly_rankings,
     get_line_volatility_stats,
     get_anomalies,
-    get_yoy_analysis
+    get_yoy_analysis,
+    get_root_cause_data
 )
 
 benchmark_df = get_network_benchmark()
@@ -34,7 +35,7 @@ yearly_rankings=get_yearly_rankings()
 yoy_df = get_yoy_analysis()
 anomalies_df = get_anomalies()
 volatility_stats_df = get_line_volatility_stats()
-
+root_cause_df=get_root_cause_data()
 volatility_df = volatility_df.rename(columns={"stddev_samp": "Volatility Score"})
 
 metric_map = {
@@ -103,6 +104,11 @@ with st.sidebar:
     options=list(ranking_metric_map.keys()),
     index=0
     )
+    root_cause_mode = st.selectbox(
+    "Root cause view",
+    options=["Percentage Contribution", "Raw Lost Customer Hours"],
+    index=0
+)
 
 selected_ranking_metric = ranking_metric_map[selected_ranking_label]
 
@@ -115,18 +121,21 @@ st.write(
     "A historical analysis of reliability, disruption, and customer experience across Underground lines."
 )
 
-tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6, tab7,tab8 = st.tabs([
     "Overview", 
     "Line Explorer", 
     "Network Analysis",
     "Yearly Rankings",
     "YoY Analysis",
     "Anomalies",
-    "Volatility"
+    "Volatility",
+    "Root Cause Analysis"
 ])
 
 
 with tab1:
+    st.write("""What this shows: A summary of network-level performance, including the most volatile and most stable lines.
+    How to interpret it: Higher volatility scores indicate greater year-to-year fluctuation in disruption levels.""")
     col1, col2, col3 = st.columns(3)
 
     with col1:
@@ -500,3 +509,56 @@ with tab7:
         """)
     else:
         st.error("Unable to load volatility data")
+
+with tab8:
+    st.subheader("Root Cause Analysis")
+
+    if root_cause_mode == "Percentage Contribution":
+        y_col = "percent_contribution"
+        chart_title = "Disruption Cause Contribution Over Time"
+        y_label = "Percentage Contribution (%)"
+    else:
+        y_col = "lost_customer_hours"
+        chart_title = "Disruption Causes Over Time"
+        y_label = "Lost Customer Hours"
+
+    fig_root = px.line(
+        root_cause_df,
+        x="year",
+        y=y_col,
+        color="category",
+        markers=True,
+        hover_data=["year_label"],
+        title=chart_title
+    )
+
+    fig_root.update_layout(
+        xaxis_title="Year",
+        yaxis_title=y_label,
+        legend_title="Category"
+    )
+
+    st.plotly_chart(fig_root, use_container_width=True)
+
+    if root_cause_mode == "Percentage Contribution":
+        st.caption(
+            "This view shows how the relative contribution of each disruption category changed over time."
+        )
+    else:
+        st.caption(
+            "This view shows the absolute lost customer hours attributed to each disruption category over time."
+        )
+
+    latest_year = root_cause_df["year"].max()
+    latest_df = root_cause_df[root_cause_df["year"] == latest_year].copy()
+
+    if root_cause_mode == "Percentage Contribution":
+        top_category = latest_df.sort_values("percent_contribution", ascending=False).iloc[0]
+        st.info(
+            f"In {top_category['year_label']}, {top_category['category']} contributed the largest share of disruption at {top_category['percent_contribution']}%."
+        )
+    else:
+        top_category = latest_df.sort_values("lost_customer_hours", ascending=False).iloc[0]
+        st.info(
+            f"In {top_category['year_label']}, {top_category['category']} accounted for the highest disruption impact with {round(top_category['lost_customer_hours'], 2)} lost customer hours."
+        )

@@ -269,3 +269,19 @@ def get_line_volatility_stats():
         print(f"Error fetching volatility stats: {e}")
         conn.close()
         return pd.DataFrame()
+
+@st.cache_data
+def get_root_cause_data():
+    """Load disruption category contribution data over time."""
+    conn = get_connection()
+    query = """
+        SELECT *
+        FROM v_lch_category_contribution
+        ORDER BY "year", category;
+    """
+    df = pd.read_sql(query, conn)
+    conn.close()
+
+    df["year_label"] = df["year"]
+    df["year"] = df["year"].str[:4].astype(int)
+    return df
