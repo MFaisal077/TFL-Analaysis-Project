@@ -2,7 +2,41 @@ import streamlit as st
 import pandas as pd
 import psycopg2
 import plotly.express as px
-import data_loader
+# Custom Styles and fotns 
+st.markdown("""
+<style>
+    /* Main title styling */
+    h1 {
+        color: #1f77b4;
+        font-size: 2.5em;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 0.5em;
+    }
+    
+    /* Subheader styling */
+    h2 {
+        color: #2c3e50;
+        border-bottom: 3px solid #1f77b4;
+        padding-bottom: 0.5em;
+        font-size: 1.8em;
+    }
+    
+    /* Tab styling */
+    [data-baseweb="tab"] {
+        background-color: #f8f9fa;
+        font-size: 1.1em;
+    }
+    
+    /* Metric cards */
+    [data-testid="metric-container"] {
+        background-color: #f0f2f6;
+        padding: 1.5em;
+        border-radius: 10px;
+        border-left: 5px solid #1f77b4;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 st.set_page_config(layout="wide", page_title="TFL Dashboard")
 
@@ -13,14 +47,14 @@ from data_loader import (
     get_worst_disruption_line,
     get_volatility_ranking,
     get_line_metrics,
-    get_yearly_rankings,
     get_most_stable_line,
     get_top_insight_lines,
     get_yearly_rankings,
     get_line_volatility_stats,
     get_anomalies,
     get_yoy_analysis,
-    get_root_cause_data
+    get_root_cause_data,
+    get_data_quality_report
 )
 
 benchmark_df = get_network_benchmark()
@@ -37,6 +71,7 @@ anomalies_df = get_anomalies()
 volatility_stats_df = get_line_volatility_stats()
 root_cause_df=get_root_cause_data()
 volatility_df = volatility_df.rename(columns={"stddev_samp": "Volatility Score"})
+data_quality_df=get_data_quality_report()
 
 metric_map = {
     "Lost Customer Hours": "lost_customer_hours",
@@ -121,7 +156,7 @@ st.write(
     "A historical analysis of reliability, disruption, and customer experience across Underground lines."
 )
 
-tab1, tab2, tab3, tab4, tab5, tab6, tab7,tab8 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6, tab7,tab8,tab9,tab10 = st.tabs([
     "Overview", 
     "Line Explorer", 
     "Network Analysis",
@@ -129,13 +164,14 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7,tab8 = st.tabs([
     "YoY Analysis",
     "Anomalies",
     "Volatility",
-    "Root Cause Analysis"
+    "Root Cause Analysis",
+    "Data Quality Report",
+    "A Summary Page"
 ])
 
 
 with tab1:
-    st.write("""What this shows: A summary of network-level performance, including the most volatile and most stable lines.
-    How to interpret it: Higher volatility scores indicate greater year-to-year fluctuation in disruption levels.""")
+  
     col1, col2, col3 = st.columns(3)
 
     with col1:
@@ -164,7 +200,9 @@ with tab1:
         yaxis_title="Volatility Score"
     )
     st.plotly_chart(fig_vol, use_container_width=True)
-
+    st.caption("""What this shows: A summary of network-level performance, including the most volatile and most stable lines.
+    
+    How to interpret it: Higher volatility scores indicate greater year-to-year fluctuation in disruption levels.""")
     st.caption(
         "Higher volatility scores indicate greater year-to-year fluctuations in lost customer hours."
     )
@@ -205,6 +243,9 @@ with tab2:
     )
 
     st.plotly_chart(fig_metric, use_container_width=True)
+    st.caption("""What this shows: Trends over time for the selected performance metric across chosen Underground lines.
+
+How to interpret it: Use this view to compare how individual lines changed over the available years. """)
     st.caption(metric_descriptions[selected_metric_label])
 
 with tab3:
@@ -248,6 +289,12 @@ with tab3:
     st.caption(
         f"This chart compares {selected_line_for_comparison} against the network average for {selected_metric_label.lower()}."
     )
+    
+    st.caption(""" 
+               What this shows: A comparison between one selected line and the network average for the chosen metric.
+
+How to interpret it: Values above or below the network average indicate how the selected line performs relative to the wider system.
+               """)
 with tab4:
     st.subheader("Yearly Performance Rankings")
 
@@ -277,6 +324,10 @@ with tab4:
     st.caption(
         f"For {selected_year}, **{top_line}** achieved the strongest result in **{selected_ranking_label.lower()}** with rank **{int(top_rank)}**."
     )
+    st.markdown(""" 
+                What this shows: Performance rankings for a selected year based on the chosen metric.
+
+How to interpret it: Lower rank values indicate stronger performance in the selected category.""")
 with tab5:
     st.subheader("Year-over-Year Performance Analysis")
     
@@ -348,9 +399,13 @@ with tab5:
             st.warning("No data available for selected year")
     else:
         st.error("Unable to load YoY data")
+    st.markdown(""" 
+                    What this shows: Year-over-year changes in lost customer hours, highlighting improvement or decline.
+
+How to interpret it: Negative change indicates improvement, while positive change indicates deterioration.""")
 
 
-# ============= TAB 6: ANOMALIES =============
+
 with tab6:
     st.subheader("Anomaly Detection: Unusual Performance Events")
     
@@ -562,3 +617,68 @@ with tab8:
         st.info(
             f"In {top_category['year_label']}, {top_category['category']} accounted for the highest disruption impact with {round(top_category['lost_customer_hours'], 2)} lost customer hours."
         )
+with tab9:
+    st.subheader("Data Quality Overview")
+
+    st.markdown("""
+    **What this shows:** Availability of key metrics across Underground lines and years.
+
+    **How to interpret it:** Higher missing-year counts indicate weaker coverage for that metric and should be considered when interpreting results.
+    """)
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        total_missing_ejt = int(data_quality_df["missing_ejt_years"].sum())
+        st.metric("Total Missing EJT Years", total_missing_ejt)
+
+    with col2:
+        total_missing_schedule = int(data_quality_df["missing_schedule_years"].sum())
+        st.metric("Total Missing Schedule Years", total_missing_schedule)
+
+    with col3:
+        total_missing_esc = int(data_quality_df["missing_esc_years"].sum())
+        st.metric("Total Missing Escalator Years", total_missing_esc)
+
+    st.divider()
+
+    st.dataframe(data_quality_df, use_container_width=True, hide_index=True)
+
+    st.info(
+        "This table helps explain where missing or incomplete data may affect interpretation of trends, rankings, and comparisons."
+    )
+
+with tab10:
+    st.markdown("This tab summarises alll the insights and conclusions we draw from the analysis.")
+    
+
+
+footer="""<style>
+a:link , a:visited{
+color: blue;
+background-color: transparent;
+text-decoration: underline;
+}
+
+a:hover,  a:active {
+color: red;
+background-color: transparent;
+text-decoration: underline;
+}
+
+.footer {
+position: fixed;
+left: 0;
+bottom: 0;
+width: 100%;
+background-color: black;
+color: white;
+text-align: center;
+font-size:25px;
+}
+</style>
+<div class="footer">
+<p>This Analysis was done by Mohammad Faisal <a style='display: block; text-align: center></a></p>
+</div>
+"""
+st.markdown(footer,unsafe_allow_html=True)

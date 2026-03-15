@@ -285,3 +285,15 @@ def get_root_cause_data():
     df["year_label"] = df["year"]
     df["year"] = df["year"].str[:4].astype(int)
     return df
+
+@st.cache_data
+def get_data_quality_report():
+    conn = get_connection()
+    query = """
+        SELECT *
+        FROM v_data_quality_report
+        ORDER BY line;
+    """
+    df = pd.read_sql(query, conn)
+    conn.close()
+    return df
