@@ -2,7 +2,10 @@ import streamlit as st
 import pandas as pd
 import psycopg2
 import plotly.express as px
-# Custom Styles and fotns 
+
+st.set_page_config(layout="wide", page_title="TFL Dashboard")
+
+
 st.markdown("""
 <style>
     /* Main title styling */
@@ -38,7 +41,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.set_page_config(layout="wide", page_title="TFL Dashboard")
+
 
 from data_loader import (
     get_network_benchmark,
@@ -99,55 +102,36 @@ metric_descriptions = {
 
 all_lines = sorted(metrics_df["line"].dropna().unique().tolist())
 
+
 with st.sidebar:
-    st.title("Dashboard Controls")
-
-    selected_lines = st.multiselect(
-        "Select line(s)",
-        options=all_lines,
-        default=["Bakerloo", "Central", "Jubilee"]
-    )
-
-    selected_metric_label = st.selectbox(
-        "Select metric",
-        options=list(metric_map.keys()),
-        index=0
-    )
-
-    selected_line_for_comparison = st.selectbox(
-        "Select one line for network comparison",
-        options=all_lines,
-        index=0
-    )
+    st.title("London Underground")
+    st.caption("Performance Dashboard")
+    st.divider()
+    st.markdown("""
+    ###  About This Dashboard
     
-    available_years = sorted(yearly_rankings["year"].dropna().unique().tolist())
-
-    selected_year = st.selectbox(
-    "Select year for rankings",
-    options=available_years,
-    index=0
-    )
-
-    ranking_metric_map = {
-    "Best Lost Customer Hours Rank": "rank_lch_best",
-    "Best Schedule Operated Rank": "rank_schedule_best",
-    "Best Customer Satisfaction Rank": "rank_css_best"
-    }
-
-    selected_ranking_label = st.selectbox(
-    "Select ranking metric",
-    options=list(ranking_metric_map.keys()),
-    index=0
-    )
-    root_cause_mode = st.selectbox(
-    "Root cause view",
-    options=["Percentage Contribution", "Raw Lost Customer Hours"],
-    index=0
-)
-
-selected_ranking_metric = ranking_metric_map[selected_ranking_label]
-
-selected_metric = metric_map[selected_metric_label]
+    Select a tab above to explore different perspectives on TfL performance data.
+    
+    **Tabs Overview:**
+    - **Overview**: Network-level summary
+    - **Line Explorer**: Compare multiple lines
+    - **Network Analysis**: Individual vs average
+    - **Yearly Rankings**: Historical rankings
+    - **YoY Analysis**: Year-over-year changes
+    - **Anomalies**: Unusual events
+    - **Volatility**: Stability ranking
+    - **Root Cause**: Disruption sources
+    - **Data Quality**: Data completeness
+    - **Summary**: Key conclusions
+    """)
+    st.divider()
+    st.markdown("""
+    ### 📈 Data Period
+    2004/05 to 2016/17
+    
+    ### 🚊 Lines Analyzed
+    11 Underground lines
+    """)
 
 
 
@@ -219,56 +203,103 @@ with tab1:
 
 with tab2:
     st.subheader("Line Explorer")
-
+    
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        tab2_selected_lines = st.multiselect(
+            "Select line(s) to compare",
+            options=all_lines,
+            default=["Bakerloo", "Central", "Jubilee"],
+            key="tab2_lines"
+        )
+    
+    with col2:
+        tab2_selected_metric_label = st.selectbox(
+            "Select metric",
+            options=list(metric_map.keys()),
+            index=0,
+            key="tab2_metric"
+        )
+    
+    st.divider()
+    
+    # REST OF CODE (unchanged, but use tab2_selected_lines and tab2_selected_metric_label)
+    tab2_selected_metric = metric_map[tab2_selected_metric_label]
+    
     filtered_df = metrics_df.copy()
-    if selected_lines:
-        filtered_df = filtered_df[filtered_df["line"].isin(selected_lines)]
-
-    filtered_df = filtered_df.dropna(subset=[selected_metric])
-
+    if tab2_selected_lines:
+        filtered_df = filtered_df[filtered_df["line"].isin(tab2_selected_lines)]
+    
+    filtered_df = filtered_df.dropna(subset=[tab2_selected_metric])
+    
     fig_metric = px.line(
         filtered_df,
         x="year",
-        y=selected_metric,
+        y=tab2_selected_metric,
         color="line",
         markers=True,
         hover_data=["year_label"],
-        title=f"{selected_metric_label} Over Time"
+        title=f"{tab2_selected_metric_label} Over Time"
     )
-
+    
     fig_metric.update_layout(
         xaxis_title="Year",
-        yaxis_title=selected_metric_label,
+        yaxis_title=tab2_selected_metric_label,
         legend_title="Line"
     )
-
+    
     st.plotly_chart(fig_metric, use_container_width=True)
-    st.caption("""What this shows: Trends over time for the selected performance metric across chosen Underground lines.
-
-How to interpret it: Use this view to compare how individual lines changed over the available years. """)
-    st.caption(metric_descriptions[selected_metric_label])
+    
+    st.caption("""What this shows: Trends over time for the selected performance metric across chosen Underground lines.""")
+    st.caption("""How to interpret it: Use this view to compare how individual lines changed over the available years. """)
+    
+    
 
 with tab3:
     st.subheader("Line vs Network Average")
-
-    line_col, network_col = network_metric_map[selected_metric_label]
-
-    compare_df = benchmark_df[benchmark_df["line"] == selected_line_for_comparison].copy()
+    
+    # ADD CONTROLS HERE
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        tab3_selected_line = st.selectbox(
+            "Select line to compare with network",
+            options=all_lines,
+            index=0,
+            key="tab3_line"
+        )
+    
+    with col2:
+        tab3_selected_metric_label = st.selectbox(
+            "Select metric",
+            options=list(metric_map.keys()),
+            index=0,
+            key="tab3_metric"
+        )
+    
+    st.divider()
+    
+    # REST OF CODE
+    line_col, network_col = network_metric_map[tab3_selected_metric_label]
+    
+    compare_df = benchmark_df[benchmark_df["line"] == tab3_selected_line].copy()
     compare_df = compare_df.dropna(subset=[line_col, network_col])
-
+    
     plot_df = compare_df[["year", "year_label", line_col, network_col]].copy()
     plot_df = plot_df.rename(columns={
-        line_col: selected_line_for_comparison,
+        line_col: tab3_selected_line,
         network_col: "Network Average"
     })
-
+    
     plot_df = plot_df.melt(
         id_vars=["year", "year_label"],
-        value_vars=[selected_line_for_comparison, "Network Average"],
+        value_vars=[tab3_selected_line, "Network Average"],
         var_name="Series",
         value_name="Value"
     )
-
+    
     fig_compare = px.line(
         plot_df,
         x="year",
@@ -276,57 +307,85 @@ with tab3:
         color="Series",
         markers=True,
         hover_data=["year_label"],
-        title=f"{selected_metric_label}: {selected_line_for_comparison} vs Network Average"
+        title=f"{tab3_selected_metric_label}: {tab3_selected_line} vs Network Average"
     )
-
+    
     fig_compare.update_layout(
         xaxis_title="Year",
-        yaxis_title=selected_metric_label,
+        yaxis_title=tab3_selected_metric_label,
         legend_title="Series"
     )
-
+    
     st.plotly_chart(fig_compare, use_container_width=True)
     st.caption(
-        f"This chart compares {selected_line_for_comparison} against the network average for {selected_metric_label.lower()}."
+        f"This chart compares {tab3_selected_line} against the network average for {tab3_selected_metric_label.lower()}."
     )
     
     st.caption(""" 
                What this shows: A comparison between one selected line and the network average for the chosen metric.
-
 How to interpret it: Values above or below the network average indicate how the selected line performs relative to the wider system.
                """)
 with tab4:
     st.subheader("Yearly Performance Rankings")
-
-    filtered_rankings = yearly_rankings[yearly_rankings["year"] == selected_year].copy()
-    filtered_rankings = filtered_rankings.dropna(subset=[selected_ranking_metric])
-    filtered_rankings = filtered_rankings.sort_values(selected_ranking_metric, ascending=True)
-
+    
+    # ADD CONTROLS HERE
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        tab4_available_years = sorted(yearly_rankings["year"].dropna().unique().tolist())
+        tab4_selected_year = st.selectbox(
+            "Select year for rankings",
+            options=tab4_available_years,
+            index=0,
+            key="tab4_year"
+        )
+    
+    with col2:
+        tab4_ranking_metric_map = {
+            "Best Lost Customer Hours Rank": "rank_lch_best",
+            "Best Schedule Operated Rank": "rank_schedule_best",
+            "Best Customer Satisfaction Rank": "rank_css_best"
+        }
+        tab4_selected_ranking_label = st.selectbox(
+            "Select ranking metric",
+            options=list(tab4_ranking_metric_map.keys()),
+            index=0,
+            key="tab4_ranking"
+        )
+    
+    st.divider()
+    
+    # REST OF CODE
+    tab4_selected_ranking_metric = tab4_ranking_metric_map[tab4_selected_ranking_label]
+    
+    filtered_rankings = yearly_rankings[yearly_rankings["year"] == tab4_selected_year].copy()
+    filtered_rankings = filtered_rankings.dropna(subset=[tab4_selected_ranking_metric])
+    filtered_rankings = filtered_rankings.sort_values(tab4_selected_ranking_metric, ascending=True)
+    
     fig_rank = px.bar(
         filtered_rankings,
         x="line",
-        y=selected_ranking_metric,
+        y=tab4_selected_ranking_metric,
         color="line",
-        title=f"{selected_ranking_label} for {selected_year}"
+        title=f"{tab4_selected_ranking_label} for {tab4_selected_year}"
     )
-
+    
     fig_rank.update_layout(
         xaxis_title="Line",
-        yaxis_title=selected_ranking_label,
+        yaxis_title=tab4_selected_ranking_label,
         showlegend=False
     )
-
+    
     st.plotly_chart(fig_rank, use_container_width=True)
-
+    
     top_line = filtered_rankings.iloc[0]["line"]
-    top_rank = filtered_rankings.iloc[0][selected_ranking_metric]
-
+    top_rank = filtered_rankings.iloc[0][tab4_selected_ranking_metric]
+    
     st.caption(
-        f"For {selected_year}, **{top_line}** achieved the strongest result in **{selected_ranking_label.lower()}** with rank **{int(top_rank)}**."
+        f"For {tab4_selected_year}, **{top_line}** achieved the strongest result in **{tab4_selected_ranking_label.lower()}** with rank **{int(top_rank)}**."
     )
     st.markdown(""" 
                 What this shows: Performance rankings for a selected year based on the chosen metric.
-
 How to interpret it: Lower rank values indicate stronger performance in the selected category.""")
 with tab5:
     st.subheader("Year-over-Year Performance Analysis")
@@ -567,8 +626,19 @@ with tab7:
 
 with tab8:
     st.subheader("Root Cause Analysis")
-
-    if root_cause_mode == "Percentage Contribution":
+    
+    # ADD CONTROL HERE
+    tab8_root_cause_mode = st.selectbox(
+        "View breakdown by",
+        options=["Percentage Contribution", "Raw Lost Customer Hours"],
+        index=0,
+        key="tab8_root"
+    )
+    
+    st.divider()
+    
+    # REST OF CODE
+    if tab8_root_cause_mode == "Percentage Contribution":
         y_col = "percent_contribution"
         chart_title = "Disruption Cause Contribution Over Time"
         y_label = "Percentage Contribution (%)"
@@ -595,7 +665,7 @@ with tab8:
 
     st.plotly_chart(fig_root, use_container_width=True)
 
-    if root_cause_mode == "Percentage Contribution":
+    if tab8_root_cause_mode == "Percentage Contribution":
         st.caption(
             "This view shows how the relative contribution of each disruption category changed over time."
         )
@@ -607,7 +677,7 @@ with tab8:
     latest_year = root_cause_df["year"].max()
     latest_df = root_cause_df[root_cause_df["year"] == latest_year].copy()
 
-    if root_cause_mode == "Percentage Contribution":
+    if tab8_root_cause_mode == "Percentage Contribution":
         top_category = latest_df.sort_values("percent_contribution", ascending=False).iloc[0]
         st.info(
             f"In {top_category['year_label']}, {top_category['category']} contributed the largest share of disruption at {top_category['percent_contribution']}%."
@@ -649,7 +719,58 @@ with tab9:
     )
 
 with tab10:
-    st.markdown("This tab summarises alll the insights and conclusions we draw from the analysis.")
+    st.subheader("Executive Summary")
+
+    st.markdown("""
+    This page provides a high-level summary of the main findings from the London Underground performance analysis dashboard.
+    It is designed for users who want a quick overview without reviewing each chart individually.
+    """)
+
+    st.divider()
+
+    st.markdown("Key Findings")
+    st.markdown(f"""
+    - **{most_volatile_line}** is the most volatile line, with a volatility score of **{volatility_score}**.
+    - **{most_stable_line}** is the most stable line, with a volatility score of **{stable_score}**.
+    - **{worst_lch_line}** records the highest average lost customer hours (**{worst_lch_score}**).
+    - **{best_css_line}** records the highest average customer satisfaction (**{best_css_score}**).
+    """)
+
+    if not anomalies_df.empty:
+        strongest_anomaly = anomalies_df.sort_values("z_score", ascending=False).iloc[0]
+        st.markdown(
+            f"- The strongest anomaly was observed for **{strongest_anomaly['line']}** with a z-score of **{strongest_anomaly['z_score']:.2f}**."
+        )
+
+    latest_year = root_cause_df["year"].max()
+    latest_root_df = root_cause_df[root_cause_df["year"] == latest_year].copy()
+
+  
+
+    st.divider()
+
+    st.markdown("### Overall Interpretation")
+    st.write(
+        "The analysis shows that Underground performance varies substantially across lines and years. "
+        "Some lines remain relatively stable over time, while others exhibit significant fluctuations, "
+        "unusual events, and weaker reliability indicators. The dashboard also shows that disruption is "
+        "not only unevenly distributed across lines, but also shaped by underlying operational causes."
+    )
+
+    st.divider()
+
+    st.markdown("### Important Limitations")
+    st.markdown("""
+    - Rankings based on absolute lost customer hours may favour smaller lines such as Waterloo & City.
+    - Some performance metrics are missing for certain years, which may affect comparison and trend interpretation.
+    - The analysis is based on yearly data, so shorter-term variation is not captured.
+    """)
+
+    st.divider()
+
+    st.info(
+        "This summary is intended to provide a quick overview. Detailed evidence and visual exploration are available in the other tabs."
+    )
     
 
 
@@ -678,7 +799,7 @@ font-size:25px;
 }
 </style>
 <div class="footer">
-<p>This Analysis was done by Mohammad Faisal <a style='display: block; text-align: center></a></p>
+<p>This Analysis was done by Mohammad Faisal <a style='display: block; text-align: center></p>
 </div>
 """
 st.markdown(footer,unsafe_allow_html=True)
