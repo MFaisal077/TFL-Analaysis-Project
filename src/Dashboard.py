@@ -524,7 +524,7 @@ with tab6:
         st.info("No anomalies detected in the data (all changes are within 2.5 standard deviations)")
 
 
-# ============= TAB 7: VOLATILITY =============
+
 with tab7:
     st.subheader("Line Volatility: Performance Stability Analysis")
     
@@ -638,7 +638,7 @@ with tab8:
     else:
         st.caption("This view shows the absolute lost customer hours attributed to each disruption category over time.")
     
-    # Also update the summary box at the bottom
+    
     latest_year = root_cause_clean["year"].max()
     latest_df = root_cause_clean[root_cause_clean["year"] == latest_year].copy()
     
@@ -755,14 +755,51 @@ with tab10:
     
     with st.expander("Data Quality Gaps", expanded=True):
         st.markdown("""
-        **📖 Data Quality Gaps**  
-        
+        **Data Quality Gaps**  
+    
         **Dashboard finding**: Data Quality Report tab shows 67 missing EJT years, etc.  
         
         **Official TfL explanation**: Reports include footnotes on incomplete data for smaller/early lines.  
         
-        **In-depth context**: These gaps explain some volatility and anomaly limitations — your dashboard now makes them transparent.
+        **In-depth context**: These gaps explain some volatility and anomaly limitations — the dashboard now makes them transparent.
         """)
     
     st.divider()
+    st.divider()
+    
+    st.subheader(" Real-World Events Tied to Dashboard Trends")
+    st.markdown("""
+    Several major spikes and anomalies in your Lost Customer Hours data align directly with documented real-world events. These ties strengthen the analysis and provide a clear foundation for future predictive modelling.
+    """)
+    
+    st.markdown("""
+    **2005 – 7 July Terrorist Bombings**  
+    Dashboard: Circle + H&C recorded the highest anomaly (Z-score 2.67, +129k LCH).  
+    Real-world: Exactly matches the 2005/06 TfL Annual Report (Safety & Security section).  
+    Impact: Network-wide disruption; my dashboard automatically flagged it as the biggest outlier in 13 years.
+    
+    **2012 – London Olympics**  
+    Dashboard: Noticeable LCH spikes on Jubilee, Central and Northern lines in 2012 (visible in Line Explorer and Network Analysis).  
+    Real-world: Massive crowds, extended night services and temporary station closures.  
+    Impact: Highest passenger volumes of the decade — explains why Jubilee (already your worst-disruption line) saw elevated lost hours.
+    
+    **2009/2010 – Severe Winter Weather + Tube Strikes**  
+    Dashboard: Elevated volatility on Piccadilly, District and Metropolitan lines; clear YoY increases.  
+    Real-world: Snow chaos + multiple strike days (TfL reports note service cancellations).  
+    Impact: Explains the second-highest volatility cluster after Waterloo & City.
+    
+    
+    """)
+    
+    st.divider()
+    
     st.success("This dashboard turns TfL’s high-level Annual Report summaries into interactive, statistically deep insights.")
+footer_html = """
+<div class="footer">
+    <p>
+        This Analysis was done by Mohammad Faisal • 
+        <a href="#" target="_blank">TfL Annual Reports</a> • 
+    </p>
+</div>
+"""
+st.markdown(footer_html, unsafe_allow_html=True)
