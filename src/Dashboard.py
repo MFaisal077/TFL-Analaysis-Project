@@ -1,3 +1,10 @@
+"""
+London Underground Performance Dashboard
+Author: Mohammad Faisal
+Supervisor: Warren Fernando
+"""
+
+import os
 import streamlit as st
 import pandas as pd
 import psycopg2
@@ -5,11 +12,11 @@ import plotly.express as px
 from styles import load_custom_css
 
 st.set_page_config(layout="wide", page_title="TFL Dashboard")
-
+#I decided to keep the styling seperate from main logic mainly because managing everything in one file was becoming a hard task and having seperation of concerns is easier to figure where things go wrong.
 load_custom_css()
 
 
-
+#Loads all the data from the data_loader.py
 from data_loader import (
     get_network_benchmark,
     get_most_volatile_line,
@@ -69,7 +76,7 @@ metric_descriptions = {
 
 all_lines = sorted(metrics_df["line"].dropna().unique().tolist())
 
-
+#The sidebar 
 with st.sidebar:
     st.title("London Underground")
     st.caption("Performance Dashboard")
@@ -106,7 +113,7 @@ st.title("London Underground Performance Dashboard")
 st.write(
     "A historical analysis of reliability, disruption, and customer experience across Underground lines."
 )
-
+#This is where all the tabs are initialised
 tab1, tab2, tab3, tab4, tab5, tab6, tab7,tab8,tab9,tab10 = st.tabs([
     "Overview", 
     "Line Explorer", 
@@ -120,7 +127,7 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7,tab8,tab9,tab10 = st.tabs([
     "A Summary Page"
 ])
 
-
+#Tab 1 - The Overview
 with tab1:
   
     col1, col2, col3 = st.columns(3)
@@ -167,7 +174,7 @@ with tab1:
     - **{worst_lch_line}** shows the highest average lost customer hours (**{worst_lch_score}**), indicating the greatest average disruption.
     """
     )
-
+#Tab 2 - Line Explorer
 with tab2:
     st.subheader("Line Explorer")
     
@@ -192,7 +199,7 @@ with tab2:
     
     st.divider()
     
-    # REST OF CODE (unchanged, but use tab2_selected_lines and tab2_selected_metric_label)
+    
     tab2_selected_metric = metric_map[tab2_selected_metric_label]
     
     filtered_df = metrics_df.copy()
@@ -223,11 +230,11 @@ with tab2:
     st.caption("""How to interpret it: Use this view to compare how individual lines changed over the available years. """)
     
     
-
+#Tab 3 - Network Analysis 
 with tab3:
     st.subheader("Line vs Network Average")
     
-    # ADD CONTROLS HERE
+    
     col1, col2 = st.columns(2)
     
     with col1:
@@ -248,7 +255,7 @@ with tab3:
     
     st.divider()
     
-    # REST OF CODE
+    
     line_col, network_col = network_metric_map[tab3_selected_metric_label]
     
     compare_df = benchmark_df[benchmark_df["line"] == tab3_selected_line].copy()
@@ -290,12 +297,12 @@ with tab3:
     
     st.caption(""" 
                What this shows: A comparison between one selected line and the network average for the chosen metric.
-How to interpret it: Values above or below the network average indicate how the selected line performs relative to the wider system.
+               How to interpret it: Values above or below the network average indicate how the selected line performs relative to the wider system.
                """)
+#Tab 4 - Yearly Rankings    
 with tab4:
     st.subheader("Yearly Performance Rankings")
     
-    # ADD CONTROLS HERE
     col1, col2 = st.columns(2)
     
     with col1:
@@ -322,7 +329,7 @@ with tab4:
     
     st.divider()
     
-    # REST OF CODE
+    
     tab4_selected_ranking_metric = tab4_ranking_metric_map[tab4_selected_ranking_label]
     
     filtered_rankings = yearly_rankings[yearly_rankings["year"] == tab4_selected_year].copy()
@@ -353,7 +360,8 @@ with tab4:
     )
     st.markdown(""" 
                 What this shows: Performance rankings for a selected year based on the chosen metric.
-How to interpret it: Lower rank values indicate stronger performance in the selected category.""")
+                How to interpret it: Lower rank values indicate stronger performance in the selected category.""")
+# Tab 5 - Year Over Year Analysis
 with tab5:
     st.subheader("Year-over-Year Performance Analysis")
     
@@ -426,12 +434,11 @@ with tab5:
     else:
         st.error("Unable to load YoY data")
     st.markdown(""" 
-                    What this shows: Year-over-year changes in lost customer hours, highlighting improvement or decline.
-
-How to interpret it: Negative change indicates improvement, while positive change indicates deterioration.""")
-
+                What this shows: Year-over-year changes in lost customer hours, highlighting improvement or decline.
+                How to interpret it: Negative change indicates improvement, while positive change indicates deterioration.""")
 
 
+#Tab 6 - Anomalies
 with tab6:
     st.subheader("Anomaly Detection: Unusual Performance Events")
     
@@ -524,7 +531,7 @@ with tab6:
         st.info("No anomalies detected in the data (all changes are within 2.5 standard deviations)")
 
 
-
+#Tab 7 - Volatility
 with tab7:
     st.subheader("Line Volatility: Performance Stability Analysis")
     
@@ -590,11 +597,11 @@ with tab7:
         """)
     else:
         st.error("Unable to load volatility data")
-
+#Tab 8 - Root Cause Analysis
 with tab8:
     st.subheader("Root Cause Analysis")
     
-    # ADD CONTROL HERE
+    
     tab8_root_cause_mode = st.selectbox(
         "View breakdown by",
         options=["Percentage Contribution", "Raw Lost Customer Hours"],
@@ -604,10 +611,10 @@ with tab8:
     
     st.divider()
     
-    # === NEW: REMOVE TOTAL ROW SO IT NEVER APPEARS IN THE CHART ===
+    
     root_cause_clean = root_cause_df[root_cause_df['category'].str.upper() != 'TOTAL'].copy()
     
-    # REST OF CODE (now using clean data)
+   
     if tab8_root_cause_mode == "Percentage Contribution":
         y_col = "percent_contribution"
         chart_title = "Disruption Cause Contribution Over Time"
@@ -618,7 +625,7 @@ with tab8:
         y_label = "Lost Customer Hours"
     
     fig_root = px.line(
-        root_cause_clean,                    # ← changed to clean df
+        root_cause_clean,                    
         x="year",
         y=y_col,
         color="category",
@@ -652,6 +659,7 @@ with tab8:
         st.info(
             f"In {top_category['year_label']}, {top_category['category']} accounted for the highest disruption impact with {round(top_category['lost_customer_hours'], 2)} lost customer hours."
         )
+#Tab 9 - Data Quality -  This tab's purpose is to show the transparency to the users that the data cant be taken seriously as there are massive gaps in the source.         
 with tab9:
     st.subheader("Data Quality Overview")
 
@@ -683,9 +691,9 @@ with tab9:
         "This table helps explain where missing or incomplete data may affect interpretation of trends, rankings, and comparisons."
     )
 
-
+#Tab 10- This is the main objective of the project.
 with tab10:
-    st.title("📖 TfL Report Insights")
+    st.title(" TfL Report Insights")
     st.markdown("""
     Every number in this dashboard comes from the **exact same raw data** TfL published in its Annual Reports.  
     This tab gives **detailed, paragraph-level explanations** of why each major trend happened.
@@ -695,7 +703,7 @@ with tab10:
     
     with st.expander("Waterloo Volatility", expanded=True):
         st.markdown("""
-        **📖 Waterloo & City – Highest Volatility (67.57)**  
+        **Waterloo & City – Highest Volatility (67.57)**  
         
         **Dashboard finding**: Tops the volatility ranking in Overview and Volatility tabs.  
         
@@ -707,7 +715,7 @@ with tab10:
     
     with st.expander("Jubilee Disruption", expanded=True):
         st.markdown("""
-        **📖 Jubilee – Worst Disruption Line (Average LCH 461,568.23)**  
+        **Jubilee – Worst Disruption Line (Average LCH 461,568.23)**  
         
         **Dashboard finding**: Highlighted in Overview tab.  
         
@@ -719,7 +727,7 @@ with tab10:
     
     with st.expander("Circle Anomaly", expanded=True):
         st.markdown("""
-        **📖 Circle + H&C – Biggest Anomaly 2005 (Z-score 2.67)**  
+        **Circle + H&C – Biggest Anomaly 2005 (Z-score 2.67)**  
         
         **Dashboard finding**: Worst anomaly in Anomalies tab (LCH 626,193).  
         
@@ -731,7 +739,7 @@ with tab10:
     
     with st.expander("Bakerloo Satisfaction", expanded=True):
         st.markdown("""
-        **📖 Bakerloo – Highest Customer Satisfaction (81.85)**  
+        **Bakerloo – Highest Customer Satisfaction (81.85)**  
         
         **Dashboard finding**: Best satisfaction line in Overview + confirmed in Network Analysis.  
         
@@ -743,7 +751,7 @@ with tab10:
     
     with st.expander("Root Cause Trends", expanded=True):
         st.markdown("""
-        **📖 Root Cause Trends – Signals & Fleet Often Dominate**  
+        **Root Cause Trends – Signals & Fleet Often Dominate**  
         
         **Dashboard finding**: In the Root Cause Analysis tab, categories like Signals, Fleet, Staff and Safety & Security typically contribute 10–30% each in most years (no single TOTAL row).  
         

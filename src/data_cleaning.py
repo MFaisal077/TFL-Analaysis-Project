@@ -2,16 +2,20 @@ import pandas as pd;
 import pandas.io.sql as sqlio
 import psycopg2;
 import numpy as p;
+import os;
 
-conn = psycopg2.connect(
-    host="localhost",
-    database="TFL_Analysis",
-    user="postgres",
-    password="Faisal@123"
-)
+def get_connection():
+    return psycopg2.connect(
+        host="localhost",
+        database="TFL_Analysis",
+        user="postgres",
+        password="Faisal@123"
+    )
 cursor=conn.cursor()
+    
+    
 
-'''
+
 ##LCh by line
 df=pd.read_csv(r"data_raw\Lost Customer Hours By Line.csv",skiprows=1, nrows = 10)
 df.rename(columns={df.columns[0]: 'line'}, inplace=True)
@@ -65,7 +69,6 @@ query4=("Insert into css(line,year,customer_satisfaction) values (%s,%s,%s)")
 for index,row in melted_df4.iterrows():
     value4=(row['line'],row['year'],row['Customer Satisfaction'])
     cursor.execute(query4,value4)
-'''
 
 df5=pd.read_csv(r"data_raw\Scheduled Operated.csv",skiprows=[0,2],nrows=10)
 df5.rename(columns={df5.columns[0]:'line'},inplace=True)

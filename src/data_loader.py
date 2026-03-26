@@ -2,6 +2,15 @@ import streamlit as st
 import pandas as pd
 import psycopg2
 import plotly.express as px
+import os
+
+def get_connection():
+    return psycopg2.connect(
+        host="localhost",
+        database="TFL_Analysis",
+        user="postgres",
+        password="Faisal@123"  # Please change this password to your local machine's PostgreSQL password in order for the app to work
+    )
 
 @st.cache_data
 def get_most_stable_line():
@@ -63,13 +72,7 @@ def get_top_insight_lines():
         df.iloc[0]["avg_customer_satisfaction"]
     )
 
-def get_connection():
-    return psycopg2.connect(
-        host="localhost",
-        database="TFL_Analysis",
-        user="postgres",
-        password="Faisal@123"
-    )
+
 
 @st.cache_data
 def get_network_benchmark():
