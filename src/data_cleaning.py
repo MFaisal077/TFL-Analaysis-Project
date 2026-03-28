@@ -1,3 +1,11 @@
+# =============================================================================
+# OPTIONAL ETL SCRIPT - MARKER NOTE
+# =============================================================================
+# This script is only needed if you want to recreate the database from raw CSVs.
+# The submitted tfl_analysis_dump.sql already contains all cleaned data + views.
+# You do NOT need to run this file for the dashboard to work.
+# =============================================================================
+
 import pandas as pd;
 import pandas.io.sql as sqlio
 import psycopg2;
@@ -9,8 +17,9 @@ def get_connection():
         host="localhost",
         database="TFL_Analysis",
         user="postgres",
-        password="Faisal@123"
+        password="Faisal@123" # Change this to your own Postgres Password you set during the installation.  
     )
+conn=get_connection()
 cursor=conn.cursor()
     
     

@@ -4,7 +4,6 @@ Author: Mohammad Faisal
 Supervisor: Warren Fernando
 """
 
-import os
 import streamlit as st
 import pandas as pd
 import psycopg2
@@ -12,7 +11,7 @@ import plotly.express as px
 from styles import load_custom_css
 
 st.set_page_config(layout="wide", page_title="TFL Dashboard")
-#I decided to keep the styling seperate from main logic mainly because managing everything in one file was becoming a hard task and having seperation of concerns is easier to figure where things go wrong.
+# I decided to keep the styling seperate from main logic mainly because managing everything in one file was becoming a hard task and having seperation of concerns is easier to figure where things go wrong.
 load_custom_css()
 
 
@@ -33,22 +32,25 @@ from data_loader import (
     get_root_cause_data,
     get_data_quality_report
 )
-
-benchmark_df = get_network_benchmark()
-most_volatile_line, volatility_score = get_most_volatile_line()
-best_css_line, best_css_score = get_best_satisfaction_line()
-worst_lch_line, worst_lch_score = get_worst_disruption_line()
-volatility_df = get_volatility_ranking()
-metrics_df = get_line_metrics()
-most_stable_line, stable_score = get_most_stable_line()
-insight_line, insight_lch, insight_css = get_top_insight_lines()
-yearly_rankings=get_yearly_rankings()
-yoy_df = get_yoy_analysis()
-anomalies_df = get_anomalies()
-volatility_stats_df = get_line_volatility_stats()
-root_cause_df=get_root_cause_data()
-volatility_df = volatility_df.rename(columns={"stddev_samp": "Volatility Score"})
-data_quality_df=get_data_quality_report()
+try: 
+  benchmark_df = get_network_benchmark()
+  most_volatile_line, volatility_score = get_most_volatile_line()
+  best_css_line, best_css_score = get_best_satisfaction_line()
+  worst_lch_line, worst_lch_score = get_worst_disruption_line()
+  volatility_df = get_volatility_ranking()
+  metrics_df = get_line_metrics()
+  most_stable_line, stable_score = get_most_stable_line()
+  insight_line, insight_lch, insight_css = get_top_insight_lines()
+  yearly_rankings=get_yearly_rankings()
+  yoy_df = get_yoy_analysis()
+  anomalies_df = get_anomalies()
+  volatility_stats_df = get_line_volatility_stats()
+  root_cause_df=get_root_cause_data()
+  volatility_df = volatility_df.rename(columns={"stddev_samp": "Volatility Score"})
+  data_quality_df=get_data_quality_report()
+except Exception as e:
+    st.error("Failed to load dashboard data. Please check the database connection and setup instructions in the README.")
+    st.stop()
 
 metric_map = {
     "Lost Customer Hours": "lost_customer_hours",
@@ -124,7 +126,7 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7,tab8,tab9,tab10 = st.tabs([
     "Volatility",
     "Root Cause Analysis",
     "Data Quality Report",
-    "A Summary Page"
+    "Summary & Insights"
 ])
 
 #Tab 1 - The Overview
@@ -659,6 +661,7 @@ with tab8:
         st.info(
             f"In {top_category['year_label']}, {top_category['category']} accounted for the highest disruption impact with {round(top_category['lost_customer_hours'], 2)} lost customer hours."
         )
+        
 #Tab 9 - Data Quality -  This tab's purpose is to show the transparency to the users that the data cant be taken seriously as there are massive gaps in the source.         
 with tab9:
     st.subheader("Data Quality Overview")
@@ -693,10 +696,10 @@ with tab9:
 
 #Tab 10- This is the main objective of the project.
 with tab10:
-    st.title(" TfL Report Insights")
+    st.title("TfL Report Insights")
     st.markdown("""
     Every number in this dashboard comes from the **exact same raw data** TfL published in its Annual Reports.  
-    This tab gives **detailed, paragraph-level explanations** of why each major trend happened.
+    This tab gives **detailed explanations** of why each major trend happened.
     """)
     
     st.divider()
@@ -710,7 +713,7 @@ with tab10:
         **Official TfL explanation (2013/14 Annual Report, p.12)**:  
         “On the lines where major improvement plans are further in the future (Bakerloo, Piccadilly, Central and Waterloo & City), LU is ensuring that service levels are maintained and ageing assets are managed in a targeted and cost-effective way.”  
         
-        **In-depth context**: Major upgrades arrived much later on this small line. Any single incident created disproportionately large swings in Lost Customer Hours. Smaller passenger numbers amplified the changes. This is exactly why your volatility bar is dramatically higher than on larger lines.
+        **In-depth context**: Major upgrades arrived much later on this small line. Any single incident created disproportionately large swings in Lost Customer Hours. Smaller passenger numbers amplified the changes. This is exactly why the volatility bar is dramatically higher than on larger lines.
         """)
     
     with st.expander("Jubilee Disruption", expanded=True):
@@ -734,7 +737,7 @@ with tab10:
         **Official TfL explanation (2005/06 Annual Report)**:  
         “Following the events of 7 July 2005…” — the terrorist bombings caused massive disruption.  
         
-        **In-depth context**: Your Z-score automatically flagged the exact event the report describes as the most significant incident of the entire 13 years.
+        **In-depth context**: The Z-score automatically flagged the exact event the report describes as the most significant incident of the entire 13 years.
         """)
     
     with st.expander("Bakerloo Satisfaction", expanded=True):
@@ -753,12 +756,12 @@ with tab10:
         st.markdown("""
         **Root Cause Trends – Signals & Fleet Often Dominate**  
         
-        **Dashboard finding**: In the Root Cause Analysis tab, categories like Signals, Fleet, Staff and Safety & Security typically contribute 10–30% each in most years (no single TOTAL row).  
+        **Dashboard finding**: In the Root Cause Analysis tab, categories like Signals, Fleet, Staff and Safety & Security typically contribute 10–30% each in most years.  
         
         **Official TfL explanation (2013/14 & 2016/17 Annual Reports, Operational Performance sections)**:  
         > Signals and fleet issues were the dominant causes of disruption on many lines, while staffing and safety/security incidents spiked in specific years (e.g. 2005). As the network modernised, multiple smaller causes accumulated.
         
-        **In-depth context**: Your chart now shows exactly this shift — no single category dominates 50% anymore because the TOTAL row was removed. Instead, Signals and Fleet often lead in later years as TfL reports describe ongoing asset and signalling challenges on older lines. This matches the reports’ narrative of cumulative operational pressures.
+        **In-depth context**: The chart now shows exactly this shift.Signals and Fleet often lead in later years as TfL reports describe ongoing asset and signalling challenges on older lines. This matches the reports’ narrative of cumulative operational pressures.
         """)
     
     with st.expander("Data Quality Gaps", expanded=True):
@@ -805,9 +808,9 @@ with tab10:
 footer_html = """
 <div class="footer">
     <p>
-        This Analysis was done by Mohammad Faisal • 
-        <a href="#" target="_blank">TfL Annual Reports</a> • 
-    </p>
+        Developed by Mohammad Faisal 
+        2025-2026
+        </p>
 </div>
 """
 st.markdown(footer_html, unsafe_allow_html=True)
