@@ -45,6 +45,7 @@ Optional: Re-run ETL from Raw CSVs
 ```bash
 python src/data_cleaning.py
 (Only needed if you want to recreate the tables from scratch — not required because the dump already contains all data.)
+```
 
 Project Structure
 ```bash TFL-ANALYSIS-PROJECT/
@@ -58,7 +59,7 @@ Project Structure
 ├── README.md
 │
 ├── data_raw/                     # Raw CSV files                   
-
+```
 Dashboard Features
 
 Overview – Network summary and KPIs
