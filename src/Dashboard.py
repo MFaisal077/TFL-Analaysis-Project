@@ -3,7 +3,7 @@ London Underground Performance Dashboard
 Author: Mohammad Faisal
 Supervisor: Warren Fernando
 """
-
+import requests
 import streamlit as st
 import pandas as pd
 import psycopg2
@@ -109,14 +109,52 @@ with st.sidebar:
     11 Underground lines
     """)
 
+def get_live_tube_status():
+    """
+    Fetches the live status of all London Underground lines from the TfL API.
+    """
+    # 1. The specific endpoint for Tube line status
+    url = "https://api.tfl.gov.uk/Line/Mode/tube/Status"
+    
+    try:
+        # 2. Make the API call
+        response = requests.get(url)
+        response.raise_for_status() # Check for any connection errors
+        
+        # 3. Convert the JSON response into a Python list of dictionaries
+        data = response.json()
+        
+        # 4. Extract the exact data we want
+        status_list = []
+        for line in data:
+            line_name = line['name']
+            
+            # The status description is nested inside a list called 'lineStatuses'
+            status_desc = line['lineStatuses'][0]['statusSeverityDescription']
+            
+            status_list.append({
+                "Line": line_name,
+                "Live Status": status_desc
+            })
+            
+        # 5. Convert to a Pandas DataFrame
+        df = pd.DataFrame(status_list)
+        return df
 
+    except Exception as e:
+        print(f"Error fetching live data: {e}")
+        return pd.DataFrame()
+
+# Run the function to test it!
+live_df = get_live_tube_status()
+print(live_df)
 
 st.title("London Underground Performance Dashboard")
 st.write(
     "A historical analysis of reliability, disruption, and customer experience across Underground lines."
 )
 #This is where all the tabs are initialised
-tab1, tab2, tab3, tab4, tab5, tab6, tab7,tab8,tab9,tab10 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6, tab7,tab8,tab9,tab10,tab11 = st.tabs([
     "Overview", 
     "Line Explorer", 
     "Network Analysis",
@@ -126,7 +164,8 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7,tab8,tab9,tab10 = st.tabs([
     "Volatility",
     "Root Cause Analysis",
     "Data Quality Report",
-    "Summary & Insights"
+    "Summary & Insights",
+    "Live Tfl Data"
 ])
 
 #Tab 1 - The Overview
@@ -814,3 +853,16 @@ footer_html = """
 </div>
 """
 st.markdown(footer_html, unsafe_allow_html=True)
+
+with tab11: # Or whichever number your new tab is
+    st.subheader("Live London Underground Status")
+    st.markdown("This data is pulled in real-time from the TfL Unified API.")
+    
+    # Fetch the live data
+    live_status_df = get_live_tube_status()
+    
+    if not live_status_df.empty:
+        # Display as a clean, interactive Streamlit dataframe
+        st.dataframe(live_status_df, use_container_width=True, hide_index=True)
+    else:
+        st.error("Currently unable to connect to the TfL Live API.")
