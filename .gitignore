@@ -1,0 +1,24 @@
+# Virtual environment
+venv/
+
+# Raw datasets
+data_raw/
+
+# Project documentation (keep local only)
+docs/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Logs
+logs/
+*.log
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
