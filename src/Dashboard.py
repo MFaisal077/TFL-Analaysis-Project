@@ -691,7 +691,7 @@ with tab9:
     )
     
 with tab11:
-    st.header("⚡ Live Network Status")
+    st.header("Live Network Status")
 
     try:
         # 1. Load Live API Snapshot
