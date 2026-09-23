@@ -111,7 +111,7 @@ st.write(
     "A historical analysis of reliability, disruption, and customer experience across Underground lines."
 )
 #This is where all the tabs are initialised
-tab1, tab2, tab3, tab4, tab5, tab6, tab7,tab8,tab9,tab10,tab11 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6, tab7,tab8,tab9,tab11,tab10 = st.tabs([
     "Overview", 
     "Line Explorer", 
     "Network Analysis",
