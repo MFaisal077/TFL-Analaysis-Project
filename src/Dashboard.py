@@ -1,9 +1,3 @@
-"""
-London Underground Performance Dashboard
-Author: Mohammad Faisal
-Supervisor: Warren Fernando
-"""
-
 import streamlit as st
 import pandas as pd
 import psycopg2
@@ -11,11 +5,10 @@ import plotly.express as px
 from styles import load_custom_css
 
 st.set_page_config(layout="wide", page_title="TFL Dashboard")
-# I decided to keep the styling seperate from main logic mainly because managing everything in one file was becoming a hard task and having seperation of concerns is easier to figure where things go wrong.
 load_custom_css()
 
 
-#Loads all the data from the data_loader.py
+
 from data_loader import (
     get_network_benchmark,
     get_most_volatile_line,
@@ -78,7 +71,7 @@ metric_descriptions = {
 
 all_lines = sorted(metrics_df["line"].dropna().unique().tolist())
 
-#The sidebar 
+ 
 with st.sidebar:
     st.title("London Underground")
     st.caption("Performance Dashboard")
@@ -98,6 +91,7 @@ with st.sidebar:
     - **Volatility**: Stability ranking
     - **Root Cause**: Disruption sources
     - **Data Quality**: Data completeness
+    - **Live Updates**:Live updates pulled straight from TFL
     - **Summary**: Key conclusions
     """)
     st.divider()
@@ -116,7 +110,7 @@ st.write(
     "A historical analysis of reliability, disruption, and customer experience across Underground lines."
 )
 #This is where all the tabs are initialised
-tab1, tab2, tab3, tab4, tab5, tab6, tab7,tab8,tab9,tab10 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6, tab7,tab8,tab9,tab10,tab11 = st.tabs([
     "Overview", 
     "Line Explorer", 
     "Network Analysis",
@@ -126,6 +120,7 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7,tab8,tab9,tab10 = st.tabs([
     "Volatility",
     "Root Cause Analysis",
     "Data Quality Report",
+    "Live Updates",
     "Summary & Insights"
 ])
 
@@ -814,3 +809,20 @@ footer_html = """
 </div>
 """
 st.markdown(footer_html, unsafe_allow_html=True)
+
+with tab11:
+    st.header("Live Network Status")
+
+try:
+    with open("live_status.json", "r") as f:
+        data = json.load(f)
+
+    df_live = pd.DataFrame(data)
+    st.caption(f"Last API Snapshot: **{df_live['fetched_at'].iloc[0]}**")
+    st.dataframe(
+        df_live[["line_name", "status"]], use_container_width=True, hide_index=True
+    )
+
+except FileNotFoundError:
+    st.info("Live data snapshot updating...")
+ 
