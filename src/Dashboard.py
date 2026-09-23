@@ -688,6 +688,22 @@ with tab9:
     st.info(
         "This table helps explain where missing or incomplete data may affect interpretation of trends, rankings, and comparisons."
     )
+    
+with tab11:
+    st.header("Live Network Status")
+
+try:
+    with open("live_status.json", "r") as f:
+        data = json.load(f)
+
+    df_live = pd.DataFrame(data)
+    st.caption(f"Last API Snapshot: **{df_live['fetched_at'].iloc[0]}**")
+    st.dataframe(
+        df_live[["line_name", "status"]], use_container_width=True, hide_index=True
+    )
+
+except FileNotFoundError:
+    st.info("Live data snapshot updating...")
 
 #Tab 10- This is the main objective of the project.
 with tab10:
@@ -810,19 +826,5 @@ footer_html = """
 """
 st.markdown(footer_html, unsafe_allow_html=True)
 
-with tab11:
-    st.header("Live Network Status")
 
-try:
-    with open("live_status.json", "r") as f:
-        data = json.load(f)
-
-    df_live = pd.DataFrame(data)
-    st.caption(f"Last API Snapshot: **{df_live['fetched_at'].iloc[0]}**")
-    st.dataframe(
-        df_live[["line_name", "status"]], use_container_width=True, hide_index=True
-    )
-
-except FileNotFoundError:
-    st.info("Live data snapshot updating...")
  
