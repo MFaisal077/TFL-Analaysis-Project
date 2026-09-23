@@ -691,20 +691,146 @@ with tab9:
     )
     
 with tab11:
-    st.header("Live Network Status")
+    st.header("⚡ Live Network Status")
 
-try:
-    with open("live_status.json", "r") as f:
-        data = json.load(f)
+    try:
+        # 1. Load Live API Snapshot
+        with open("live_status.json", "r") as f:
+            data = json.load(f)
 
-    df_live = pd.DataFrame(data)
-    st.caption(f"Last API Snapshot: **{df_live['fetched_at'].iloc[0]}**")
-    st.dataframe(
-        df_live[["line_name", "status"]], use_container_width=True, hide_index=True
-    )
+        df_live = pd.DataFrame(data)
+        st.caption(f"Last API Snapshot: **{df_live['fetched_at'].iloc[0]}**")
 
-except FileNotFoundError:
-    st.info("Live data snapshot updating...")
+        # 2. Top KPI Summary Cards
+        total_lines = len(df_live)
+        good_service = len(df_live[df_live["status"] == "Good Service"])
+        disrupted = total_lines - good_service
+
+        kpi1, kpi2, kpi3 = st.columns(3)
+        kpi1.metric("Total Lines", total_lines)
+        kpi2.metric(
+            "Good Service",
+            good_service,
+            delta=f"{(good_service / total_lines) * 100:.0f}% Operating",
+            delta_color="normal",
+        )
+        kpi3.metric(
+            "Disruptions",
+            disrupted,
+            delta=f"-{disrupted} Affected" if disrupted > 0 else "All Clear",
+            delta_color="inverse" if disrupted > 0 else "normal",
+        )
+
+        st.divider()
+
+        # 3. Interactive Filter & Live Status Table
+        status_filter = st.radio(
+            "Filter Network View:",
+            options=[
+                "All Lines",
+                "Disrupted / Delayed Only",
+                "Good Service Only",
+            ],
+            horizontal=True,
+        )
+
+        if status_filter == "Disrupted / Delayed Only":
+            df_display = df_live[df_live["status"] != "Good Service"]
+        elif status_filter == "Good Service Only":
+            df_display = df_live[df_live["status"] == "Good Service"]
+        else:
+            df_display = df_live.copy()
+
+        st.dataframe(
+            df_display[["line_name", "status"]],
+            column_config={
+                "line_name": st.column_config.TextColumn("Tube Line"),
+                "status": st.column_config.TextColumn("Live Operational Status"),
+            },
+            width="stretch",
+            hide_index=True,
+        )
+
+        # 4. Comparative 4-Line Benchmark Chart
+        st.divider()
+        st.subheader("📈 Live Status vs. Historical Benchmarks")
+
+        try:
+            con = duckdb.connect("tfl_analysis.db", read_only=True)
+
+            # Query DuckDB historical dataset for timeframe averages
+            # (Adjust column/table names below if they differ in your database)
+            benchmark_query = """
+                SELECT 
+                    line_name,
+                    AVG(CASE WHEN timestamp >= CURRENT_DATE - INTERVAL '1 day' THEN delay_score END) AS "Yesterday Avg",
+                    AVG(CASE WHEN timestamp >= CURRENT_DATE - INTERVAL '7 days' THEN delay_score END) AS "Last Week Avg",
+                    AVG(CASE WHEN timestamp >= CURRENT_DATE - INTERVAL '30 days' THEN delay_score END) AS "Last Month Avg"
+                FROM tfl_historical_data
+                GROUP BY line_name
+            """
+            df_benchmarks = con.execute(benchmark_query).df()
+            con.close()
+
+            # Map status descriptions to a numeric index for plotting against historical numbers
+            status_map = {
+                "Good Service": 0,
+                "Minor Delays": 1,
+                "Severe Delays": 2,
+                "Part Suspended": 2.5,
+                "Suspended": 3,
+            }
+            df_live["Live Today"] = df_live["status"].map(
+                lambda x: status_map.get(x, 0)
+            )
+
+            # Merge live status with historical benchmark query
+            df_combined = pd.merge(
+                df_live[["line_name", "Live Today"]],
+                df_benchmarks,
+                on="line_name",
+                how="left",
+            )
+
+            # Melt dataframe into long format for multi-line Plotly express
+            df_plot = df_combined.melt(
+                id_vars=["line_name"],
+                value_vars=[
+                    "Live Today",
+                    "Yesterday Avg",
+                    "Last Week Avg",
+                    "Last Month Avg",
+                ],
+                var_name="Timeframe",
+                value_name="Disruption Severity Index",
+            )
+
+            fig = px.line(
+                df_plot,
+                x="line_name",
+                y="Disruption Severity Index",
+                color="Timeframe",
+                markers=True,
+                labels={
+                    "line_name": "Tube Line",
+                    "Disruption Severity Index": "Severity Index (0 = Normal)",
+                },
+            )
+
+            fig.update_layout(hovermode="x unified")
+            st.plotly_chart(fig, width="stretch")
+
+        except Exception as db_err:
+            st.info(
+                "Historical benchmarks unavailable. Displaying live snapshot only."
+            )
+
+    except FileNotFoundError:
+        st.info(
+            "Live status snapshot file (`live_status.json`) not found. Waiting for data update..."
+        )
+    except Exception as e:
+        st.error(f"An unexpected error occurred: {e}")
 
 #Tab 10- This is the main objective of the project.
 with tab10:
