@@ -2,56 +2,56 @@
   {
     "line_name": "Bakerloo",
     "status": "Good Service",
-    "fetched_at": "2026-09-24 16:28:28 UTC"
+    "fetched_at": "2026-09-24 20:15:50 UTC"
   },
   {
     "line_name": "Central",
-    "status": "Minor Delays",
-    "fetched_at": "2026-09-24 16:28:28 UTC"
+    "status": "Good Service",
+    "fetched_at": "2026-09-24 20:15:50 UTC"
   },
   {
     "line_name": "Circle",
     "status": "Good Service",
-    "fetched_at": "2026-09-24 16:28:28 UTC"
+    "fetched_at": "2026-09-24 20:15:50 UTC"
   },
   {
     "line_name": "District",
     "status": "Good Service",
-    "fetched_at": "2026-09-24 16:28:28 UTC"
+    "fetched_at": "2026-09-24 20:15:50 UTC"
   },
   {
     "line_name": "Hammersmith & City",
     "status": "Good Service",
-    "fetched_at": "2026-09-24 16:28:28 UTC"
+    "fetched_at": "2026-09-24 20:15:50 UTC"
   },
   {
     "line_name": "Jubilee",
     "status": "Good Service",
-    "fetched_at": "2026-09-24 16:28:28 UTC"
+    "fetched_at": "2026-09-24 20:15:50 UTC"
   },
   {
     "line_name": "Metropolitan",
-    "status": "Good Service",
-    "fetched_at": "2026-09-24 16:28:28 UTC"
+    "status": "Minor Delays",
+    "fetched_at": "2026-09-24 20:15:50 UTC"
   },
   {
     "line_name": "Northern",
     "status": "Good Service",
-    "fetched_at": "2026-09-24 16:28:28 UTC"
+    "fetched_at": "2026-09-24 20:15:50 UTC"
   },
   {
     "line_name": "Piccadilly",
     "status": "Good Service",
-    "fetched_at": "2026-09-24 16:28:28 UTC"
+    "fetched_at": "2026-09-24 20:15:50 UTC"
   },
   {
     "line_name": "Victoria",
     "status": "Good Service",
-    "fetched_at": "2026-09-24 16:28:28 UTC"
+    "fetched_at": "2026-09-24 20:15:50 UTC"
   },
   {
     "line_name": "Waterloo & City",
     "status": "Good Service",
-    "fetched_at": "2026-09-24 16:28:28 UTC"
+    "fetched_at": "2026-09-24 20:15:50 UTC"
   }
 ]
