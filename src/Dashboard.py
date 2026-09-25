@@ -696,7 +696,7 @@ with tab11:
 
     try:
         # 1. Load Live API Snapshot
-        with open(r"data\live_status.json", "r") as f:
+        with open("data\live_status.json", "r") as f:
             data = json.load(f)
 
         df_live = pd.DataFrame(data)
