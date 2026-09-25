@@ -122,7 +122,8 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7,tab8,tab9,tab11,tab10 = st.tabs([
     "Root Cause Analysis",
     "Data Quality Report",
     "Live Updates",
-    "Summary & Insights"
+    "Summary & Insights",
+    
 ])
 
 #Tab 1 - The Overview
@@ -831,6 +832,20 @@ with tab11:
         )
     except Exception as e:
         st.error(f"An unexpected error occurred: {e}")
+    def load_historical_data():
+     try:
+        df = pd.read_csv("data/tfl_status_history.csv")
+        df["timestamp"] = pd.to_datetime(df["timestamp"])
+        return df
+     except FileNotFoundError:
+        return pd.DataFrame()
+
+
+df_history = load_historical_data()
+
+if not df_history.empty:
+    st.write(f"Total Historical Snapshots Logged: {len(df_history)}")
+    st.dataframe(df_history.tail(22))  # Display last 2 full network updates
 
 #Tab 10- This is the main objective of the project.
 with tab10:

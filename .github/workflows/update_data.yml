@@ -3,31 +3,33 @@ name: Hourly TfL Data Fetcher
 on:
   schedule:
     - cron: '0 * * * *'  # Runs automatically at the top of every hour
-  workflow_dispatch:      # Allows you to trigger it manually from GitHub anytime
+  workflow_dispatch:      # Allows manual triggering from GitHub anytime
 
 jobs:
   fetch-tfl-data:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required for git pull --rebase to work without shallow clone errors
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
       - name: Install dependencies
-        run: pip install requests
+        run: pip install requests pandas
 
       - name: Run TfL API script
         run: python src/api_test.py
 
-      - name: Commit and push updated JSON
+      - name: Commit and push historical data updates
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add live_status.json
-          git commit -m "Automated hourly update: TfL live status" || exit 0
+          git add data/
+          git commit -m "Automated hourly data log: TfL status history" || exit 0
           git pull --rebase origin main
           git push
