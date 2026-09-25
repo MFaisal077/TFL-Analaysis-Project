@@ -699,8 +699,19 @@ with tab11:
         with open("data/live_status.json", "r") as f:
             data = json.load(f)
 
-        df_live = pd.DataFrame(data)
-        st.caption(f"Last API Snapshot: **{df_live['fetched_at'].iloc[0]}**")
+        # Extract top-level timestamp safely
+        fetched_at = data.get("fetched_at", "N/A")
+        st.caption(f"Last API Snapshot: **{fetched_at}**")
+
+        # Extract line records array from the "lines" key
+        lines_data = data.get("lines", [])
+        df_live = pd.DataFrame(lines_data)
+
+        # Fallback columns if list is empty
+        if "line_name" not in df_live.columns:
+            df_live["line_name"] = "Unknown Line"
+        if "status" not in df_live.columns:
+            df_live["status"] = "Unknown"
 
         # 2. Top KPI Summary Cards
         total_lines = len(df_live)
@@ -712,7 +723,11 @@ with tab11:
         kpi2.metric(
             "Good Service",
             good_service,
-            delta=f"{(good_service / total_lines) * 100:.0f}% Operating",
+            delta=(
+                f"{(good_service / total_lines) * 100:.0f}% Operating"
+                if total_lines > 0
+                else "0%"
+            ),
             delta_color="normal",
         )
         kpi3.metric(
@@ -746,9 +761,11 @@ with tab11:
             df_display[["line_name", "status"]],
             column_config={
                 "line_name": st.column_config.TextColumn("Tube Line"),
-                "status": st.column_config.TextColumn("Live Operational Status"),
+                "status": st.column_config.TextColumn(
+                    "Live Operational Status"
+                ),
             },
-            width="stretch",
+            use_container_width=True,
             hide_index=True,
         )
 
@@ -759,8 +776,6 @@ with tab11:
         try:
             con = duckdb.connect("tfl_analysis.db", read_only=True)
 
-            # Query DuckDB historical dataset for timeframe averages
-            # (Adjust column/table names below if they differ in your database)
             benchmark_query = """
                 SELECT 
                     line_name,
@@ -773,7 +788,6 @@ with tab11:
             df_benchmarks = con.execute(benchmark_query).df()
             con.close()
 
-            # Map status descriptions to a numeric index for plotting against historical numbers
             status_map = {
                 "Good Service": 0,
                 "Minor Delays": 1,
@@ -785,7 +799,6 @@ with tab11:
                 lambda x: status_map.get(x, 0)
             )
 
-            # Merge live status with historical benchmark query
             df_combined = pd.merge(
                 df_live[["line_name", "Live Today"]],
                 df_benchmarks,
@@ -793,7 +806,6 @@ with tab11:
                 how="left",
             )
 
-            # Melt dataframe into long format for multi-line Plotly express
             df_plot = df_combined.melt(
                 id_vars=["line_name"],
                 value_vars=[
@@ -819,7 +831,7 @@ with tab11:
             )
 
             fig.update_layout(hovermode="x unified")
-            st.plotly_chart(fig, width="stretch")
+            st.plotly_chart(fig, use_container_width=True)
 
         except Exception as db_err:
             st.info(
@@ -832,20 +844,21 @@ with tab11:
         )
     except Exception as e:
         st.error(f"An unexpected error occurred: {e}")
+
+    # Historical Log Section
     def load_historical_data():
-     try:
-        df = pd.read_csv("data/tfl_status_history.csv")
-        df["timestamp"] = pd.to_datetime(df["timestamp"])
-        return df
-     except FileNotFoundError:
-        return pd.DataFrame()
+        try:
+            df = pd.read_csv("data/tfl_status_history.csv")
+            df["timestamp"] = pd.to_datetime(df["timestamp"])
+            return df
+        except FileNotFoundError:
+            return pd.DataFrame()
 
+    df_history = load_historical_data()
 
-df_history = load_historical_data()
-
-if not df_history.empty:
-    st.write(f"Total Historical Snapshots Logged: {len(df_history)}")
-    st.dataframe(df_history.tail(22))  # Display last 2 full network updates
+    if not df_history.empty:
+        st.write(f"Total Historical Snapshots Logged: {len(df_history)}")
+        st.dataframe(df_history.tail(22), use_container_width=True)
 
 #Tab 10- This is the main objective of the project.
 with tab10:
