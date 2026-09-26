@@ -87,3 +87,14 @@ timestamp,line_id,line_name,status,severity,is_disrupted
 2026-09-26T14:04:30.002578+00:00,piccadilly,Piccadilly,Part Closure,5,1
 2026-09-26T14:04:30.002578+00:00,victoria,Victoria,Minor Delays,9,1
 2026-09-26T14:04:30.002578+00:00,waterloo-city,Waterloo & City,Planned Closure,4,1
+2026-09-26T18:17:56.981967+00:00,bakerloo,Bakerloo,Good Service,10,0
+2026-09-26T18:17:56.981967+00:00,central,Central,Part Closure,5,1
+2026-09-26T18:17:56.981967+00:00,circle,Circle,Good Service,10,0
+2026-09-26T18:17:56.981967+00:00,district,District,Good Service,10,0
+2026-09-26T18:17:56.981967+00:00,hammersmith-city,Hammersmith & City,Good Service,10,0
+2026-09-26T18:17:56.981967+00:00,jubilee,Jubilee,Minor Delays,9,1
+2026-09-26T18:17:56.981967+00:00,metropolitan,Metropolitan,Minor Delays,9,1
+2026-09-26T18:17:56.981967+00:00,northern,Northern,Good Service,10,0
+2026-09-26T18:17:56.981967+00:00,piccadilly,Piccadilly,Part Closure,5,1
+2026-09-26T18:17:56.981967+00:00,victoria,Victoria,Minor Delays,9,1
+2026-09-26T18:17:56.981967+00:00,waterloo-city,Waterloo & City,Planned Closure,4,1
