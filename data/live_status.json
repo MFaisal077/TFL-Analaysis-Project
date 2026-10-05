@@ -1,93 +1,93 @@
 {
-  "fetched_at": "2026-10-05T01:34:40.641585+00:00",
+  "fetched_at": "2026-10-05T08:17:32.640359+00:00",
   "lines": [
     {
-      "timestamp": "2026-10-05T01:34:40.641585+00:00",
+      "timestamp": "2026-10-05T08:17:32.640359+00:00",
       "line_id": "bakerloo",
       "line_name": "Bakerloo",
-      "status": "Service Closed",
-      "severity": 20,
-      "is_disrupted": 1
+      "status": "Good Service",
+      "severity": 10,
+      "is_disrupted": 0
     },
     {
-      "timestamp": "2026-10-05T01:34:40.641585+00:00",
+      "timestamp": "2026-10-05T08:17:32.640359+00:00",
       "line_id": "central",
       "line_name": "Central",
-      "status": "Service Closed",
-      "severity": 20,
+      "status": "Minor Delays",
+      "severity": 9,
       "is_disrupted": 1
     },
     {
-      "timestamp": "2026-10-05T01:34:40.641585+00:00",
+      "timestamp": "2026-10-05T08:17:32.640359+00:00",
       "line_id": "circle",
       "line_name": "Circle",
-      "status": "Service Closed",
-      "severity": 20,
-      "is_disrupted": 1
+      "status": "Good Service",
+      "severity": 10,
+      "is_disrupted": 0
     },
     {
-      "timestamp": "2026-10-05T01:34:40.641585+00:00",
+      "timestamp": "2026-10-05T08:17:32.640359+00:00",
       "line_id": "district",
       "line_name": "District",
-      "status": "Service Closed",
-      "severity": 20,
-      "is_disrupted": 1
+      "status": "Good Service",
+      "severity": 10,
+      "is_disrupted": 0
     },
     {
-      "timestamp": "2026-10-05T01:34:40.641585+00:00",
+      "timestamp": "2026-10-05T08:17:32.640359+00:00",
       "line_id": "hammersmith-city",
       "line_name": "Hammersmith & City",
-      "status": "Service Closed",
-      "severity": 20,
-      "is_disrupted": 1
+      "status": "Good Service",
+      "severity": 10,
+      "is_disrupted": 0
     },
     {
-      "timestamp": "2026-10-05T01:34:40.641585+00:00",
+      "timestamp": "2026-10-05T08:17:32.640359+00:00",
       "line_id": "jubilee",
       "line_name": "Jubilee",
-      "status": "Service Closed",
-      "severity": 20,
-      "is_disrupted": 1
+      "status": "Good Service",
+      "severity": 10,
+      "is_disrupted": 0
     },
     {
-      "timestamp": "2026-10-05T01:34:40.641585+00:00",
+      "timestamp": "2026-10-05T08:17:32.640359+00:00",
       "line_id": "metropolitan",
       "line_name": "Metropolitan",
-      "status": "Service Closed",
-      "severity": 20,
-      "is_disrupted": 1
+      "status": "Good Service",
+      "severity": 10,
+      "is_disrupted": 0
     },
     {
-      "timestamp": "2026-10-05T01:34:40.641585+00:00",
+      "timestamp": "2026-10-05T08:17:32.640359+00:00",
       "line_id": "northern",
       "line_name": "Northern",
-      "status": "Service Closed",
-      "severity": 20,
-      "is_disrupted": 1
+      "status": "Good Service",
+      "severity": 10,
+      "is_disrupted": 0
     },
     {
-      "timestamp": "2026-10-05T01:34:40.641585+00:00",
+      "timestamp": "2026-10-05T08:17:32.640359+00:00",
       "line_id": "piccadilly",
       "line_name": "Piccadilly",
-      "status": "Service Closed",
-      "severity": 20,
+      "status": "Minor Delays",
+      "severity": 9,
       "is_disrupted": 1
     },
     {
-      "timestamp": "2026-10-05T01:34:40.641585+00:00",
+      "timestamp": "2026-10-05T08:17:32.640359+00:00",
       "line_id": "victoria",
       "line_name": "Victoria",
-      "status": "Service Closed",
-      "severity": 20,
+      "status": "Severe Delays",
+      "severity": 6,
       "is_disrupted": 1
     },
     {
-      "timestamp": "2026-10-05T01:34:40.641585+00:00",
+      "timestamp": "2026-10-05T08:17:32.640359+00:00",
       "line_id": "waterloo-city",
       "line_name": "Waterloo & City",
-      "status": "Service Closed",
-      "severity": 20,
-      "is_disrupted": 1
+      "status": "Good Service",
+      "severity": 10,
+      "is_disrupted": 0
     }
   ]
 }
