@@ -2606,3 +2606,14 @@ timestamp,line_id,line_name,status,severity,is_disrupted
 2026-11-16T07:38:15.212456+00:00,piccadilly,Piccadilly,Good Service,10,0
 2026-11-16T07:38:15.212456+00:00,victoria,Victoria,Good Service,10,0
 2026-11-16T07:38:15.212456+00:00,waterloo-city,Waterloo & City,Good Service,10,0
+2026-11-16T17:54:36.338911+00:00,bakerloo,Bakerloo,Minor Delays,9,1
+2026-11-16T17:54:36.338911+00:00,central,Central,Minor Delays,9,1
+2026-11-16T17:54:36.338911+00:00,circle,Circle,Good Service,10,0
+2026-11-16T17:54:36.338911+00:00,district,District,Minor Delays,9,1
+2026-11-16T17:54:36.338911+00:00,hammersmith-city,Hammersmith & City,Good Service,10,0
+2026-11-16T17:54:36.338911+00:00,jubilee,Jubilee,Good Service,10,0
+2026-11-16T17:54:36.338911+00:00,metropolitan,Metropolitan,Minor Delays,9,1
+2026-11-16T17:54:36.338911+00:00,northern,Northern,Good Service,10,0
+2026-11-16T17:54:36.338911+00:00,piccadilly,Piccadilly,Minor Delays,9,1
+2026-11-16T17:54:36.338911+00:00,victoria,Victoria,Good Service,10,0
+2026-11-16T17:54:36.338911+00:00,waterloo-city,Waterloo & City,Good Service,10,0
