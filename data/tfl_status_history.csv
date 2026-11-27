@@ -2958,3 +2958,14 @@ timestamp,line_id,line_name,status,severity,is_disrupted
 2026-11-27T02:43:04.716822+00:00,piccadilly,Piccadilly,Service Closed,20,1
 2026-11-27T02:43:04.716822+00:00,victoria,Victoria,Service Closed,20,1
 2026-11-27T02:43:04.716822+00:00,waterloo-city,Waterloo & City,Service Closed,20,1
+2026-11-27T11:44:34.329883+00:00,bakerloo,Bakerloo,Severe Delays,6,1
+2026-11-27T11:44:34.329883+00:00,central,Central,Severe Delays,6,1
+2026-11-27T11:44:34.329883+00:00,circle,Circle,Severe Delays,6,1
+2026-11-27T11:44:34.329883+00:00,district,District,Severe Delays,6,1
+2026-11-27T11:44:34.329883+00:00,hammersmith-city,Hammersmith & City,Severe Delays,6,1
+2026-11-27T11:44:34.329883+00:00,jubilee,Jubilee,Minor Delays,9,1
+2026-11-27T11:44:34.329883+00:00,metropolitan,Metropolitan,Severe Delays,6,1
+2026-11-27T11:44:34.329883+00:00,northern,Northern,Severe Delays,6,1
+2026-11-27T11:44:34.329883+00:00,piccadilly,Piccadilly,Severe Delays,6,1
+2026-11-27T11:44:34.329883+00:00,victoria,Victoria,Severe Delays,6,1
+2026-11-27T11:44:34.329883+00:00,waterloo-city,Waterloo & City,Suspended,2,1
